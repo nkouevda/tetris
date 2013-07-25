@@ -1,18 +1,21 @@
 <!-- Nikita Kouevda -->
-<!-- 2012/03/27 -->
+<!-- 2013/07/25 -->
 
 # Tetris
 
-### To compile:
+Tetris implemented in Java.
 
-    javac tetris/game/*.java tetris/gui/*.java
+## Usage
+
+### Compile
+
+    make
 
 or (JAR):
 
-    javac tetris/game/*.java tetris/gui/*.java
-    jar cfm Tetris.jar MANIFEST.MF tetris/game/*.class tetris/gui/*.class
+    make && make jar
 
-### To run:
+### Run
 
     java tetris/gui/TetrisFrame
 

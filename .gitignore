@@ -1,5 +1,12 @@
-.classpath
-.project
+# Nikita Kouevda
+# 2013/07/25
+
+# OS X Finder
+.DS_Store
+
+# Temporary Vim files
+*.swp
+
+# Compiled Java files
 *.class
-/*.jar
-*.applet
+*.jar
