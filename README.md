@@ -1,5 +1,5 @@
 <!-- Nikita Kouevda -->
-<!-- 2013/07/25 -->
+<!-- 2013/10/05 -->
 
 # Tetris
 
@@ -7,7 +7,7 @@ Tetris implemented in Java.
 
 ## Usage
 
-### Compile
+To compile:
 
     make
 
@@ -15,9 +15,9 @@ or (JAR):
 
     make && make jar
 
-### Run
+To run:
 
-    java tetris/gui/TetrisFrame
+    java tetris.gui.TetrisFrame
 
 or (JAR):
 
