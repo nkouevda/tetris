@@ -1,6 +1,6 @@
 /**
  * @author Nikita Kouevda
- * @date 2012/06/14
+ * @date 2013/10/05
  */
 
 package tetris.gui;
@@ -10,49 +10,33 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public class TetrisFrame extends JFrame {
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
-
-    private TetrisPanel myPanel;
-
-    // -------------------------------------------------------------------------
-    // Constructors
-    // -------------------------------------------------------------------------
+    private TetrisPanel panel;
 
     public TetrisFrame() {
         super("Tetris");
 
-        // Construct the panel and configure it properly
-        myPanel = new TetrisPanel();
-        myPanel.addKeyListener(new TetrisKeyListener(myPanel,
-                myPanel.getGame(), false));
-        myPanel.setFocusable(true);
+        panel = new TetrisPanel();
+        panel.addKeyListener(new TetrisKeyListener(panel, panel.getGame(),
+            false));
+        panel.setFocusable(true);
 
-        // Set the menu bar and override the content pane with the panel
-        setJMenuBar(new TetrisMenuBar(myPanel));
-        setContentPane(myPanel);
+        setJMenuBar(new TetrisMenuBar(panel));
+        setContentPane(panel);
 
-        // Set basic properties and center the frame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(620, 650);
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    // -------------------------------------------------------------------------
-    // Methods
-    // -------------------------------------------------------------------------
-
     public static void main(String... args) {
-        // Use system-specific UI if possible
         try {
+            // Use system-specific UI if possible
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
-            // Ignore exception
+            // Proceed without system-specific UI
         }
 
-        // Launch via swing
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

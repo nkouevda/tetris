@@ -1,6 +1,6 @@
 /**
  * @author Nikita Kouevda
- * @date 2012/06/02
+ * @date 2013/10/05
  */
 
 package tetris.gui;
@@ -11,30 +11,24 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumMap;
+
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
 import tetris.game.TetrisGame;
 import tetris.game.TetrisGame.GameState;
 import tetris.game.TetrisGrid.SquareType;
 
 public class TetrisPanel extends JPanel {
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
-
     private static final int GAP = 1;
 
     private static final EnumMap<SquareType, Color> COLORS;
 
-    private TetrisGame myGame;
+    private TetrisGame game;
 
-    private Timer myTimer;
+    private Timer timer;
 
-    private int mySquareWidth, myBasketWidth, myBasketHeight, mySmallDimension;
-
-    // -------------------------------------------------------------------------
-    // Initializers
-    // -------------------------------------------------------------------------
+    private int squareWidth, basketWidth, basketHeight, smallDimension;
 
     static {
         COLORS = new EnumMap<SquareType, Color>(SquareType.class);
@@ -49,32 +43,23 @@ public class TetrisPanel extends JPanel {
         COLORS.put(SquareType.SHADOW, Color.LIGHT_GRAY);
     }
 
-    // -------------------------------------------------------------------------
-    // Constructors
-    // -------------------------------------------------------------------------
-
     public TetrisPanel() {
-        // Call the super constructor with true to double buffer
+        // Call the super constructor with true in order to double buffer
         super(true);
 
-        // Initialize the timer with a listener
-        myTimer = new Timer(1000, new ActionListener() {
+        timer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                myGame.moveTetrominoDownTimer();
+                game.moveTetrominoDownTimer();
                 repaint();
             }
         });
 
-        myGame = new TetrisGame(myTimer);
+        game = new TetrisGame(timer);
     }
 
-    // -------------------------------------------------------------------------
-    // Methods
-    // -------------------------------------------------------------------------
-
     public TetrisGame getGame() {
-        return myGame;
+        return game;
     }
 
     @Override
@@ -83,98 +68,95 @@ public class TetrisPanel extends JPanel {
         setBackground(new Color(0xEEEEEE));
 
         // Define the constants relative to the bounds of this panel
-        mySquareWidth =
-                Math.min(
-                        (int)((getWidth() - (myGame.getBasketGrid()
-                                .getNumCols()
-                                + myGame.getNextGrid().getNumCols()
-                                + myGame.getHoldGrid().getNumCols() + 3)
-                                * GAP) / (myGame.getBasketGrid().getNumCols()
-                                + myGame.getNextGrid().getNumCols()
-                                + myGame.getHoldGrid().getNumCols() + 4.5)),
-                        (getHeight() - (myGame.getBasketGrid().getNumRows() - 1)
-                                * GAP)
-                                / (myGame.getBasketGrid().getNumRows()));
-        myBasketWidth =
-                myGame.getBasketGrid().getNumCols() * (mySquareWidth + GAP)
-                        + GAP;
-        myBasketHeight =
-                (myGame.getBasketGrid().getNumRows() - 2)
-                        * (mySquareWidth + GAP) + GAP;
-        mySmallDimension =
-                myGame.getNextGrid().getNumCols() * (mySquareWidth + GAP) + GAP;
+        squareWidth =
+            Math.min((int)((getWidth() - (game.getBasketGrid().getNumCols()
+                + game.getNextGrid().getNumCols()
+                + game.getHoldGrid().getNumCols() + 3)
+                * GAP) / (game.getBasketGrid().getNumCols()
+                + game.getNextGrid().getNumCols()
+                + game.getHoldGrid().getNumCols() + 4.5)), (getHeight() - (game
+                .getBasketGrid().getNumRows() - 1) * GAP)
+                / (game.getBasketGrid().getNumRows()));
+        basketWidth =
+            game.getBasketGrid().getNumCols() * (squareWidth + GAP) + GAP;
+        basketHeight =
+            (game.getBasketGrid().getNumRows() - 2) * (squareWidth + GAP) + GAP;
+        smallDimension =
+            game.getNextGrid().getNumCols() * (squareWidth + GAP) + GAP;
 
         // Translate the origin to the top left corner
-        g.translate((getWidth() - (myBasketWidth + 5 * mySquareWidth / 2 + 2
-                * mySmallDimension)) / 2,(getHeight() - myBasketHeight) / 2);
+        g.translate(
+            (getWidth() - (basketWidth + 5 * squareWidth / 2 + 2 * smallDimension)) / 2,
+            (getHeight() - basketHeight) / 2);
 
         // Paint the rectangles around the basket and next areas
         g.setColor(Color.LIGHT_GRAY);
-        g.drawRect(mySmallDimension + 5 * mySquareWidth / 4, 0,
-                myBasketWidth - 1, myBasketHeight - 1);
-        g.drawRect(mySmallDimension + myBasketWidth + 5 * mySquareWidth / 2, 0,
-                mySmallDimension - 1, mySmallDimension - 1);
-        g.drawRect(0, 0, mySmallDimension - 1, mySmallDimension - 1);
+        g.drawRect(smallDimension + 5 * squareWidth / 4, 0, basketWidth - 1,
+            basketHeight - 1);
+        g.drawRect(smallDimension + basketWidth + 5 * squareWidth / 2, 0,
+            smallDimension - 1, smallDimension - 1);
+        g.drawRect(0, 0, smallDimension - 1, smallDimension - 1);
 
         // Paint each of the squares of the hold grid
-        for (int col = 0; col < myGame.getHoldGrid().getNumCols(); ++col)
-            for (int row = 0; row < myGame.getHoldGrid().getNumRows(); ++row)
-                paintSquare(g, myGame.getHoldGrid().get(col, row), col
-                        * (mySquareWidth + GAP) + GAP, (myGame.getHoldGrid()
-                        .getNumRows()
-                        - row - 1)
-                        * (mySquareWidth + GAP) + GAP);
+        for (int col = 0; col < game.getHoldGrid().getNumCols(); ++col) {
+            for (int row = 0; row < game.getHoldGrid().getNumRows(); ++row) {
+                paintSquare(g, game.getHoldGrid().get(col, row), col
+                    * (squareWidth + GAP) + GAP, (game.getHoldGrid()
+                    .getNumRows() - row - 1)
+                    * (squareWidth + GAP) + GAP);
+            }
+        }
 
         // Paint each of the squares of the basket grid
-        for (int col = 0; col < myGame.getBasketGrid().getNumCols(); ++col)
-            for (int row = 0; row < myGame.getBasketGrid().getNumRows() - 2;
-                    ++row)
-                paintSquare(g, myGame.getBasketGrid().get(col, row),
-                        mySmallDimension + 5 * mySquareWidth / 4 + col
-                                * (mySquareWidth + GAP) + GAP, (myGame
-                                .getBasketGrid().getNumRows()
-                                - row - 3)
-                                * (mySquareWidth + GAP) + GAP);
+        for (int col = 0; col < game.getBasketGrid().getNumCols(); ++col) {
+            for (int row = 0; row < game.getBasketGrid().getNumRows() - 2; ++row) {
+                paintSquare(g, game.getBasketGrid().get(col, row),
+                    smallDimension + 5 * squareWidth / 4 + col
+                        * (squareWidth + GAP) + GAP, (game.getBasketGrid()
+                        .getNumRows() - row - 3)
+                        * (squareWidth + GAP) + GAP);
+            }
+        }
 
         // Paint each of the squares of the next grid
-        for (int col = 0; col < myGame.getNextGrid().getNumCols(); ++col)
-            for (int row = 0; row < myGame.getNextGrid().getNumRows(); ++row)
-
-                paintSquare(g, myGame.getNextGrid().get(col, row),
-                        mySmallDimension + myBasketWidth + 5 * mySquareWidth
-                                / 2 + col * (mySquareWidth + GAP) + GAP,
-                        (myGame.getNextGrid().getNumRows() - row - 1)
-                                * (mySquareWidth + GAP) + GAP);
+        for (int col = 0; col < game.getNextGrid().getNumCols(); ++col) {
+            for (int row = 0; row < game.getNextGrid().getNumRows(); ++row) {
+                paintSquare(g, game.getNextGrid().get(col, row), smallDimension
+                    + basketWidth + 5 * squareWidth / 2 + col
+                    * (squareWidth + GAP) + GAP, (game.getNextGrid()
+                    .getNumRows() - row - 1)
+                    * (squareWidth + GAP) + GAP);
+            }
+        }
 
         // Translate the origin to the top left corner of the statistics
-        g.translate(0, mySmallDimension + 7 * (mySquareWidth + GAP) / 4);
+        g.translate(0, smallDimension + 7 * (squareWidth + GAP) / 4);
 
         // Set the text color and size
         g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", 0, (mySquareWidth + GAP) / 2 + 3));
+        g.setFont(new Font("Arial", 0, (squareWidth + GAP) / 2 + 3));
 
         // Translate the origin to the top left corner of the basic info
 
         // Paint the score, the number of lines removed, and the level
-        g.drawString("Score: " + myGame.getScore(), 0, 0);
-        g.drawString("Lines: " + myGame.getLines(), 0,
-                3 * (mySquareWidth + GAP) / 2);
-        g.drawString("Level: " + myGame.getLevel(), 0,
-                3 * (mySquareWidth + GAP));
+        g.drawString("Score: " + game.getScore(), 0, 0);
+        g.drawString("Lines: " + game.getLines(), 0,
+            3 * (squareWidth + GAP) / 2);
+        g.drawString("Level: " + game.getLevel(), 0, 3 * (squareWidth + GAP));
 
         // Paint "Paused" or "Game Over" if necessary
-        if (myGame.getState() != GameState.ON) {
+        if (game.getState() != GameState.ON) {
             g.setColor(Color.RED);
 
-            g.drawString(myGame.getState() == GameState.PAUSED ? "Paused"
-                    : "Game Over", 0, 9 * (mySquareWidth + GAP) / 2);
+            g.drawString(game.getState() == GameState.PAUSED ? "Paused"
+                : "Game Over", 0, 9 * (squareWidth + GAP) / 2);
         }
     }
 
     private void paintSquare(Graphics g, SquareType type, int x, int y) {
         // Paint shadow squares only if the shadow option is selected
         g.setColor(COLORS.get(type != SquareType.SHADOW
-                || myGame.isDisplayShadow() ? type : SquareType.EMPTY));
-        g.fillRect(x, y, mySquareWidth, mySquareWidth);
+            || game.isDisplayShadow() ? type : SquareType.EMPTY));
+        g.fillRect(x, y, squareWidth, squareWidth);
     }
 }

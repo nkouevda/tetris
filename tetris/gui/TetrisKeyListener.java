@@ -1,6 +1,6 @@
 /**
  * @author Nikita Kouevda
- * @date 2012/06/02
+ * @date 2013/10/05
  */
 
 package tetris.gui;
@@ -10,138 +10,133 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+
 import javax.swing.Timer;
+
 import tetris.game.TetrisGame;
 
 public class TetrisKeyListener extends KeyAdapter {
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
-
     private static final int DELAY_MILLIS = 150, REPEAT_MILLIS = 20;
 
-    private Component myComponent;
+    private Component component;
 
-    private TetrisGame myGame;
+    private TetrisGame game;
 
-    private Timer myDelayTimer, myRepeatTimer;
+    private Timer delayTimer, repeatTimer;
 
-    private boolean myRunningAsApplet;
+    private boolean runningAsApplet;
 
-    private int myCurrentRepeat;
+    private int currentRepeat;
 
-    // -------------------------------------------------------------------------
-    // Constructors
-    // -------------------------------------------------------------------------
-
-    public TetrisKeyListener(Component component, TetrisGame game,
+    public TetrisKeyListener(final Component component, final TetrisGame game,
             boolean runningAsApplet) {
-        myComponent = component;
-        myGame = game;
-        myRunningAsApplet = runningAsApplet;
-        myCurrentRepeat = 0;
+        this.component = component;
+        this.game = game;
+        this.runningAsApplet = runningAsApplet;
+        currentRepeat = 0;
 
         // Initialize the delay timer with a listener
-        myDelayTimer =
-                new Timer(DELAY_MILLIS - REPEAT_MILLIS, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        myRepeatTimer.start();
-                        myDelayTimer.stop();
-                    }
-                });
+        delayTimer =
+            new Timer(DELAY_MILLIS - REPEAT_MILLIS, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    repeatTimer.start();
+                    delayTimer.stop();
+                }
+            });
 
         // Disble repeats for the delay timer
-        myDelayTimer.setRepeats(false);
+        delayTimer.setRepeats(false);
 
         // Initialize the repeat timer with a listener
-        myRepeatTimer = new Timer(REPEAT_MILLIS, new ActionListener() {
+        repeatTimer = new Timer(REPEAT_MILLIS, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (myCurrentRepeat == KeyEvent.VK_LEFT)
-                    myGame.moveTetrominoLeft();
-                else if (myCurrentRepeat == KeyEvent.VK_RIGHT)
-                    myGame.moveTetrominoRight();
-                else if (myCurrentRepeat == KeyEvent.VK_DOWN)
-                    myGame.moveTetrominoDown();
-                else
-                    myRepeatTimer.stop();
+                if (currentRepeat == KeyEvent.VK_LEFT) {
+                    game.moveTetrominoLeft();
+                } else if (currentRepeat == KeyEvent.VK_RIGHT) {
+                    game.moveTetrominoRight();
+                } else if (currentRepeat == KeyEvent.VK_DOWN) {
+                    game.moveTetrominoDown();
+                } else {
+                    repeatTimer.stop();
+                }
 
                 // Repaint the component to reflect changes
-                myComponent.repaint();
+                component.repaint();
             }
         });
     }
-
-    // -------------------------------------------------------------------------
-    // Methods
-    // -------------------------------------------------------------------------
 
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP:
             case KeyEvent.VK_NUMPAD8:
-                myGame.rotateTetromino(e.getModifiers() != 0);
+                game.rotateTetromino(e.getModifiers() != 0);
                 break;
             case KeyEvent.VK_SPACE:
             case KeyEvent.VK_ENTER:
-                myGame.dropTetromino(e.getModifiers() != 0);
+                game.dropTetromino(e.getModifiers() != 0);
                 break;
             case KeyEvent.VK_SHIFT:
-                myGame.holdTetromino();
+                game.holdTetromino();
                 break;
             case KeyEvent.VK_LEFT:
             case KeyEvent.VK_NUMPAD4:
-                myGame.moveTetrominoLeft();
-                myCurrentRepeat = KeyEvent.VK_LEFT;
+                game.moveTetrominoLeft();
+                currentRepeat = KeyEvent.VK_LEFT;
 
-                if (!myDelayTimer.isRunning() && !myRepeatTimer.isRunning())
-                    myDelayTimer.start();
+                if (!delayTimer.isRunning() && !repeatTimer.isRunning()) {
+                    delayTimer.start();
+                }
 
                 break;
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_NUMPAD6:
-                myGame.moveTetrominoRight();
-                myCurrentRepeat = KeyEvent.VK_RIGHT;
+                game.moveTetrominoRight();
+                currentRepeat = KeyEvent.VK_RIGHT;
 
-                if (!myDelayTimer.isRunning() && !myRepeatTimer.isRunning())
-                    myDelayTimer.start();
+                if (!delayTimer.isRunning() && !repeatTimer.isRunning()) {
+                    delayTimer.start();
+                }
 
                 break;
             case KeyEvent.VK_DOWN:
             case KeyEvent.VK_NUMPAD2:
-                myGame.moveTetrominoDown();
-                myCurrentRepeat = KeyEvent.VK_DOWN;
+                game.moveTetrominoDown();
+                currentRepeat = KeyEvent.VK_DOWN;
 
-                if (!myRepeatTimer.isRunning())
-                    myRepeatTimer.start();
+                if (!repeatTimer.isRunning()) {
+                    repeatTimer.start();
+                }
 
                 break;
         }
 
         // Check unmodified keys if running as applet
-        if (myRunningAsApplet)
+        if (runningAsApplet) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_N:
-                    myGame.startGame();
+                    game.startGame();
                     break;
                 case KeyEvent.VK_P:
-                    myGame.pauseGame();
+                    game.pauseGame();
                     break;
                 case KeyEvent.VK_R:
-                    myGame.setRotateClockwise(!myGame.isRotateClockwise());
+                    game.setRotateClockwise(!game.isRotateClockwise());
                     break;
                 case KeyEvent.VK_D:
-                    myGame.setMoveAfterDrop(!myGame.isMoveAfterDrop());
+                    game.setMoveAfterDrop(!game.isMoveAfterDrop());
                     break;
                 case KeyEvent.VK_S:
-                    myGame.setDisplayShadow(!myGame.isDisplayShadow());
+                    game.setDisplayShadow(!game.isDisplayShadow());
                     break;
             }
+        }
 
         // Repaint the component to reflect changes
-        myComponent.repaint();
+        component.repaint();
     }
 
     @Override
@@ -153,8 +148,8 @@ public class TetrisKeyListener extends KeyAdapter {
             case KeyEvent.VK_NUMPAD6:
             case KeyEvent.VK_DOWN:
             case KeyEvent.VK_NUMPAD2:
-                myDelayTimer.stop();
-                myRepeatTimer.stop();
+                delayTimer.stop();
+                repeatTimer.stop();
                 break;
         }
     }

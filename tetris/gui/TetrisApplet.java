@@ -1,39 +1,28 @@
 /**
  * @author Nikita Kouevda
- * @date 2012/06/02
+ * @date 2013/10/05
  */
 
 package tetris.gui;
 
 import javax.swing.JApplet;
+
 import tetris.game.TetrisGame;
 
 public class TetrisApplet extends JApplet {
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
+    private TetrisPanel panel;
 
-    private TetrisPanel myPanel;
-
-    private TetrisGame myGame;
-
-    // -------------------------------------------------------------------------
-    // Methods
-    // -------------------------------------------------------------------------
+    private TetrisGame game;
 
     @Override
     public void init() {
         super.init();
 
-        // Construct the panel and override the content pane with the it
-        myPanel = new TetrisPanel();
-        setContentPane(myPanel);
+        panel = new TetrisPanel();
+        setContentPane(panel);
+        game = panel.getGame();
 
-        // Get the game instance from the panel
-        myGame = myPanel.getGame();
-
-        // Add a key listener and allow this applet to be focusable
-        addKeyListener(new TetrisKeyListener(this, myGame, true));
+        addKeyListener(new TetrisKeyListener(this, game, true));
         setFocusable(true);
     }
 }

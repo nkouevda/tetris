@@ -1,133 +1,110 @@
 /**
  * @author Nikita Kouevda
- * @date 2012/06/02
+ * @date 2013/10/05
  */
 
 package tetris.game;
 
 import java.util.EnumMap;
+
 import tetris.game.TetrisGrid.SquareType;
 
 public class Tetromino {
-    // -------------------------------------------------------------------------
-    // Enumerations
-    // -------------------------------------------------------------------------
-
     private static enum RotationState {
         UP, RIGHT, DOWN, LEFT
     }
-
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
 
     private final static EnumMap<SquareType, int[][]> DEFAULT_REL_LOCS;
 
     private final static EnumMap<RotationState, int[][]> I_ROTATION_REL_LOCS,
             ROTATION_REL_LOCS;
 
-    private TetrisGrid myGrid;
+    private TetrisGrid grid;
 
-    private SquareType myType;
+    private SquareType type;
 
-    private boolean myDisplayShadow;
+    private boolean displayShadow;
 
-    private int[][] myRelLocs;
+    private int[][] relLocs;
 
-    private int myRow, myCol, myShadowDistance;
+    private int row, col, shadowDistance;
 
-    private RotationState myRotationState;
-
-    // -------------------------------------------------------------------------
-    // Initializers
-    // -------------------------------------------------------------------------
+    private RotationState rotationState;
 
     static {
         // Initialize the relative locations in the default rotation
         DEFAULT_REL_LOCS = new EnumMap<SquareType, int[][]>(SquareType.class);
-        DEFAULT_REL_LOCS.put(SquareType.I, new int[][]{{0, 0}, {-1, 0}, {1, 0},
-            {2, 0}});
-        DEFAULT_REL_LOCS.put(SquareType.J, new int[][]{{0, 0}, {-1, 1},
+        DEFAULT_REL_LOCS.put(SquareType.I, new int[][] { {0, 0}, {-1, 0},
+            {1, 0}, {2, 0}});
+        DEFAULT_REL_LOCS.put(SquareType.J, new int[][] { {0, 0}, {-1, 1},
             {-1, 0}, {1, 0}});
-        DEFAULT_REL_LOCS.put(SquareType.L, new int[][]{{0, 0}, {-1, 0}, {1, 1},
-            {1, 0}});
-        DEFAULT_REL_LOCS.put(SquareType.O, new int[][]{{0, 0}, {0, 1}, {1, 1},
-            {1, 0}});
-        DEFAULT_REL_LOCS.put(SquareType.S, new int[][]{{0, 0}, {-1, 0}, {0, 1},
-            {1, 1}});
-        DEFAULT_REL_LOCS.put(SquareType.T, new int[][]{{0, 0}, {-1, 0}, {0, 1},
-            {1, 0}});
-        DEFAULT_REL_LOCS.put(SquareType.Z, new int[][]{{0, 0}, {-1, 1}, {0, 1},
-            {1, 0}});
+        DEFAULT_REL_LOCS.put(SquareType.L, new int[][] { {0, 0}, {-1, 0},
+            {1, 1}, {1, 0}});
+        DEFAULT_REL_LOCS.put(SquareType.O, new int[][] { {0, 0}, {0, 1},
+            {1, 1}, {1, 0}});
+        DEFAULT_REL_LOCS.put(SquareType.S, new int[][] { {0, 0}, {-1, 0},
+            {0, 1}, {1, 1}});
+        DEFAULT_REL_LOCS.put(SquareType.T, new int[][] { {0, 0}, {-1, 0},
+            {0, 1}, {1, 0}});
+        DEFAULT_REL_LOCS.put(SquareType.Z, new int[][] { {0, 0}, {-1, 1},
+            {0, 1}, {1, 0}});
 
         // Initialize the relative locations for kicks and twists
         ROTATION_REL_LOCS =
-                new EnumMap<RotationState, int[][]>(RotationState.class);
-        ROTATION_REL_LOCS.put(RotationState.UP, new int[][]{{0, 0}, {-1, 0},
+            new EnumMap<RotationState, int[][]>(RotationState.class);
+        ROTATION_REL_LOCS.put(RotationState.UP, new int[][] { {0, 0}, {-1, 0},
             {-1, 1}, {0, -2}, {-1, -2}});
-        ROTATION_REL_LOCS.put(RotationState.RIGHT, new int[][]{{0, 0}, {1, 0},
-            {1, -1}, {0, 2}, {1, 2}});
-        ROTATION_REL_LOCS.put(RotationState.DOWN, new int[][]{{0, 0}, {1, 0},
+        ROTATION_REL_LOCS.put(RotationState.RIGHT, new int[][] { {0, 0},
+            {1, 0}, {1, -1}, {0, 2}, {1, 2}});
+        ROTATION_REL_LOCS.put(RotationState.DOWN, new int[][] { {0, 0}, {1, 0},
             {1, 1}, {0, -2}, {1, -2}});
-        ROTATION_REL_LOCS.put(RotationState.LEFT, new int[][]{{0, 0}, {-1, 0},
-            {-1, -1}, {0, 2}, {-1, 2}});
+        ROTATION_REL_LOCS.put(RotationState.LEFT, new int[][] { {0, 0},
+            {-1, 0}, {-1, -1}, {0, 2}, {-1, 2}});
 
         // Initialize the relative locations for I for kicks and twists
         I_ROTATION_REL_LOCS =
-                new EnumMap<RotationState, int[][]>(RotationState.class);
-        I_ROTATION_REL_LOCS.put(RotationState.UP, new int[][]{{0, 0}, {-2, 0},
-            {1, 0}, {-2, -1}, {1, 2}});
-        I_ROTATION_REL_LOCS.put(RotationState.RIGHT, new int[][]{{0, 0},
+            new EnumMap<RotationState, int[][]>(RotationState.class);
+        I_ROTATION_REL_LOCS.put(RotationState.UP, new int[][] { {0, 0},
+            {-2, 0}, {1, 0}, {-2, -1}, {1, 2}});
+        I_ROTATION_REL_LOCS.put(RotationState.RIGHT, new int[][] { {0, 0},
             {-1, 0}, {2, 0}, {-1, 2}, {2, -1}});
-        I_ROTATION_REL_LOCS.put(RotationState.DOWN, new int[][]{{0, 0}, {2, 0},
-            {-1, 0}, {2, 1}, {-1, -2}});
-        I_ROTATION_REL_LOCS.put(RotationState.LEFT, new int[][]{{0, 0}, {1, 0},
-            {-2, 0}, {1, -2}, {-2, 1}});
+        I_ROTATION_REL_LOCS.put(RotationState.DOWN, new int[][] { {0, 0},
+            {2, 0}, {-1, 0}, {2, 1}, {-1, -2}});
+        I_ROTATION_REL_LOCS.put(RotationState.LEFT, new int[][] { {0, 0},
+            {1, 0}, {-2, 0}, {1, -2}, {-2, 1}});
     }
 
-    // -------------------------------------------------------------------------
-    // Constructors
-    // -------------------------------------------------------------------------
-
     public Tetromino(SquareType type, TetrisGrid grid, boolean displayShadow) {
-        // Initialize the basic fields
-        myGrid = grid;
-        myType = type;
-        myDisplayShadow = displayShadow;
+        this.grid = grid;
+        this.type = type;
+        this.displayShadow = displayShadow;
 
-        // Initialize the array of relative locations of squares
-        myRelLocs =
-                new int[][]{DEFAULT_REL_LOCS.get(myType)[0].clone(),
-                    DEFAULT_REL_LOCS.get(myType)[1].clone(),
-                    DEFAULT_REL_LOCS.get(myType)[2].clone(),
-                    DEFAULT_REL_LOCS.get(myType)[3].clone()};
+        relLocs =
+            new int[][] {DEFAULT_REL_LOCS.get(this.type)[0].clone(),
+                DEFAULT_REL_LOCS.get(this.type)[1].clone(),
+                DEFAULT_REL_LOCS.get(this.type)[2].clone(),
+                DEFAULT_REL_LOCS.get(this.type)[3].clone()};
 
-        // Initialize the current location and shadow distance
-        myRow = myGrid.getNumRows() - 2;
-        myCol = (myGrid.getNumCols() - 1) / 2;
-        myRotationState = RotationState.UP;
-        myShadowDistance = 0;
+        row = this.grid.getNumRows() - 2;
+        col = (this.grid.getNumCols() - 1) / 2;
+        rotationState = RotationState.UP;
+        shadowDistance = 0;
 
-        // Update the grid
         updateGrid();
     }
 
-    // -------------------------------------------------------------------------
-    // Methods
-    // -------------------------------------------------------------------------
-
     public SquareType getType() {
-        return myType;
+        return type;
     }
 
     public void setDisplayShadow(boolean displayShadow) {
-        myDisplayShadow = displayShadow;
+        this.displayShadow = displayShadow;
 
         // Remove the shadow if it was enabled
-        if (!myDisplayShadow)
+        if (!displayShadow) {
             removeShadow();
+        }
 
-        // Update the grid
         updateGrid();
     }
 
@@ -135,11 +112,12 @@ public class Tetromino {
         boolean isCompletelyAbove = true;
 
         // Override if any individual square is below the threshold
-        for (int[] relLoc : myRelLocs)
-            if (relLoc[1] + myRow < myGrid.getNumRows() - 2) {
+        for (int[] relLoc : relLocs) {
+            if (relLoc[1] + row < grid.getNumRows() - 2) {
                 isCompletelyAbove = false;
                 break;
             }
+        }
 
         return isCompletelyAbove;
     }
@@ -148,32 +126,35 @@ public class Tetromino {
         boolean canSpawn = true;
 
         int destinationRow = destinationGrid.getNumRows() - 2, destinationCol =
-                (destinationGrid.getNumCols() - 1) / 2;
+            (destinationGrid.getNumCols() - 1) / 2;
 
         // Override if any individual square cannot spawn
-        for (int[] relLoc : myRelLocs)
+        for (int[] relLoc : relLocs) {
             if (destinationGrid.isOccupied(relLoc[0] + destinationCol,
-                    relLoc[1] + destinationRow)) {
+                relLoc[1] + destinationRow)) {
                 canSpawn = false;
                 break;
             }
+        }
 
         return canSpawn;
     }
 
     public boolean moveLeft() {
         // Return false if the tetromino cannot move left
-        for (int[] relLoc : myRelLocs)
-            if (relLoc[0] + myCol <= 0 || myGrid.isOccupied(relLoc[0] + myCol
-                    - 1, relLoc[1] + myRow) && !isSelfOccupied(relLoc[0]
-                            + myCol - 1, relLoc[1] + myRow))
+        for (int[] relLoc : relLocs) {
+            if (relLoc[0] + col <= 0
+                || grid.isOccupied(relLoc[0] + col - 1, relLoc[1] + row)
+                && !isSelfOccupied(relLoc[0] + col - 1, relLoc[1] + row)) {
                 return false;
+            }
+        }
 
         // Empty the old locations (including shadow)
         removeFromGrid();
 
         // Move the tetromino left once
-        --myCol;
+        --col;
 
         // Update the grid
         updateGrid();
@@ -183,18 +164,19 @@ public class Tetromino {
 
     public boolean moveRight() {
         // Return false if the tetromino cannot move right
-        for (int[] relLoc : myRelLocs)
-            if (relLoc[0] + myCol >= myGrid.getNumCols() - 1
-                    || myGrid.isOccupied(relLoc[0] + myCol + 1, relLoc[1]
-                            + myRow) && !isSelfOccupied(relLoc[0] + myCol + 1,
-                                    relLoc[1] + myRow))
+        for (int[] relLoc : relLocs) {
+            if (relLoc[0] + col >= grid.getNumCols() - 1
+                || grid.isOccupied(relLoc[0] + col + 1, relLoc[1] + row)
+                && !isSelfOccupied(relLoc[0] + col + 1, relLoc[1] + row)) {
                 return false;
+            }
+        }
 
         // Empty the old locations (including shadow)
         removeFromGrid();
 
         // Move the tetromino right once
-        ++myCol;
+        ++col;
 
         // Update the grid
         updateGrid();
@@ -204,18 +186,19 @@ public class Tetromino {
 
     public boolean moveDown() {
         // Return false if the tetromino cannot move down
-        for (int[] relLoc : myRelLocs)
-            if (relLoc[1] + myRow <= 0
-                    || myGrid.isOccupied(relLoc[0] + myCol, relLoc[1] + myRow
-                            - 1) && !isSelfOccupied(relLoc[0] + myCol, relLoc[1]
-                                    + myRow - 1))
+        for (int[] relLoc : relLocs) {
+            if (relLoc[1] + row <= 0
+                || grid.isOccupied(relLoc[0] + col, relLoc[1] + row - 1)
+                && !isSelfOccupied(relLoc[0] + col, relLoc[1] + row - 1)) {
                 return false;
+            }
+        }
 
         // Empty the old locations (including shadow)
         removeFromGrid();
 
         // Move the tetromino down once
-        --myRow;
+        --row;
 
         // Update the grid
         updateGrid();
@@ -226,32 +209,34 @@ public class Tetromino {
     public int drop() {
         int rowsDropped = 0;
 
-        while (moveDown())
+        while (moveDown()) {
             ++rowsDropped;
+        }
 
         return rowsDropped;
     }
 
     public boolean rotate(boolean rotateClockwise) {
         // Return false if this tetromino's type is O
-        if (myType == SquareType.O)
+        if (type == SquareType.O) {
             return false;
+        }
 
         // Determine the destination rotation
         RotationState stateRotatingTo =
-                rotateClockwise ? getNextStateCW(myRotationState)
-                        : getNextStateCCW(myRotationState);
+            rotateClockwise ? getNextStateCW(rotationState)
+                : getNextStateCCW(rotationState);
 
         // Array of default relative locations for rotation
         int[][] relLocsTo =
-                new int[][]{myRelLocs[0].clone(), myRelLocs[1].clone(),
-                    myRelLocs[2].clone(), myRelLocs[3].clone()};
+            new int[][] {relLocs[0].clone(), relLocs[1].clone(),
+                relLocs[2].clone(), relLocs[3].clone()};
 
         // Adjust center for type I tetromino
-        int defaultColTo = myCol, defaultRowTo = myRow;
+        int defaultColTo = col, defaultRowTo = row;
 
         // Move the I tetromino out if rotating clockwise
-        if (myType == SquareType.I && rotateClockwise) {
+        if (type == SquareType.I && rotateClockwise) {
             defaultColTo += relLocsTo[2][0];
             defaultRowTo += relLocsTo[2][1];
         }
@@ -264,27 +249,30 @@ public class Tetromino {
         }
 
         // Negate the row or column depending on rotation setting
-        if (rotateClockwise)
-            for (int[] relLoc : relLocsTo)
+        if (rotateClockwise) {
+            for (int[] relLoc : relLocsTo) {
                 relLoc[1] = -relLoc[1];
-        else
-            for (int[] relLoc : relLocsTo)
+            }
+        } else {
+            for (int[] relLoc : relLocsTo) {
                 relLoc[0] = -relLoc[0];
+            }
+        }
 
         // Move the I tetromino in if rotating counterclockwise
-        if (myType == SquareType.I && !rotateClockwise) {
+        if (type == SquareType.I && !rotateClockwise) {
             defaultColTo -= relLocsTo[2][0];
             defaultRowTo -= relLocsTo[2][1];
         }
 
         // Adjustments for kick states
         int[][] relLocsToAdjustment =
-                rotateClockwise ? relLocsToAdjustment =
-                        myType == SquareType.I ? I_ROTATION_REL_LOCS
-                                .get(myRotationState) : ROTATION_REL_LOCS
-                                .get(myRotationState) : myType == SquareType.I
-                        ? I_ROTATION_REL_LOCS.get(stateRotatingTo)
-                        : ROTATION_REL_LOCS.get(stateRotatingTo);
+            rotateClockwise ? relLocsToAdjustment =
+                type == SquareType.I ? I_ROTATION_REL_LOCS.get(rotationState)
+                    : ROTATION_REL_LOCS.get(rotationState)
+                : type == SquareType.I ? I_ROTATION_REL_LOCS
+                    .get(stateRotatingTo) : ROTATION_REL_LOCS
+                    .get(stateRotatingTo);
 
         // Actual central column and row for rotation
         int colTo = defaultColTo, rowTo = defaultRowTo;
@@ -298,49 +286,51 @@ public class Tetromino {
 
             for (j = 0; j < relLocsTo.length; ++j) {
                 colTo =
-                        defaultColTo
-                                + (rotateClockwise ? relLocsToAdjustment[i][0]
-                                        : -relLocsToAdjustment[i][0]);
+                    defaultColTo
+                        + (rotateClockwise ? relLocsToAdjustment[i][0]
+                            : -relLocsToAdjustment[i][0]);
                 rowTo =
-                        defaultRowTo
-                                + (rotateClockwise ? relLocsToAdjustment[i][1]
-                                        : -relLocsToAdjustment[i][1]);
+                    defaultRowTo
+                        + (rotateClockwise ? relLocsToAdjustment[i][1]
+                            : -relLocsToAdjustment[i][1]);
             }
 
             // Check whether the tetromino can be rotated
-            for (int[] relLoc : relLocsTo)
+            for (int[] relLoc : relLocsTo) {
                 if (relLoc[0] + colTo < 0
-                        || relLoc[0] + colTo > myGrid.getNumCols() - 1
-                        || relLoc[1] + rowTo < 0
-                        || relLoc[1] + rowTo > myGrid.getNumRows() - 1
-                        || myGrid.isOccupied(relLoc[0] + colTo, relLoc[1]
-                                + rowTo) && !isSelfOccupied(relLoc[0] + colTo,
-                                        relLoc[1] + rowTo)) {
+                    || relLoc[0] + colTo > grid.getNumCols() - 1
+                    || relLoc[1] + rowTo < 0
+                    || relLoc[1] + rowTo > grid.getNumRows() - 1
+                    || grid.isOccupied(relLoc[0] + colTo, relLoc[1] + rowTo)
+                    && !isSelfOccupied(relLoc[0] + colTo, relLoc[1] + rowTo)) {
                     canRotate = false;
                     break;
                 }
+            }
 
-            if (canRotate)
+            if (canRotate) {
                 break;
+            }
         }
 
         // Return false if rotation is impossible
-        if (!canRotate)
+        if (!canRotate) {
             return false;
+        }
 
         // Empty the old locations (including shadow)
         removeFromGrid();
 
         // Update the current relative locations
-        for (int i = 0; i < myRelLocs.length; ++i) {
-            myRelLocs[i][0] = relLocsTo[i][0];
-            myRelLocs[i][1] = relLocsTo[i][1];
+        for (int i = 0; i < relLocs.length; ++i) {
+            relLocs[i][0] = relLocsTo[i][0];
+            relLocs[i][1] = relLocsTo[i][1];
         }
 
         // Update the new row and column
-        myCol = colTo;
-        myRow = rowTo;
-        myRotationState = stateRotatingTo;
+        col = colTo;
+        row = rowTo;
+        rotationState = stateRotatingTo;
 
         // Update the grid
         updateGrid();
@@ -349,23 +339,28 @@ public class Tetromino {
     }
 
     public void removeFromGrid() {
-        for (int[] relLoc : myRelLocs)
-            myGrid.set(relLoc[0] + myCol, relLoc[1] + myRow, SquareType.EMPTY);
+        for (int[] relLoc : relLocs) {
+            grid.set(relLoc[0] + col, relLoc[1] + row, SquareType.EMPTY);
+        }
 
-        if (myDisplayShadow)
+        if (displayShadow) {
             removeShadow();
+        }
     }
 
     private void removeShadow() {
-        for (int[] relLoc : myRelLocs)
-            myGrid.set(relLoc[0] + myCol, relLoc[1] + myRow - myShadowDistance,
-                    SquareType.EMPTY);
+        for (int[] relLoc : relLocs) {
+            grid.set(relLoc[0] + col, relLoc[1] + row - shadowDistance,
+                SquareType.EMPTY);
+        }
     }
 
     private boolean isSelfOccupied(int col, int row) {
-        for (int[] ownLoc : myRelLocs)
-            if (col == ownLoc[0] + myCol && row == ownLoc[1] + myRow)
+        for (int[] ownLoc : relLocs) {
+            if (col == ownLoc[0] + this.col && row == ownLoc[1] + this.row) {
                 return true;
+            }
+        }
 
         return false;
     }
@@ -402,36 +397,40 @@ public class Tetromino {
 
     private void updateGrid() {
         // Draw the shadow (previous should already have been removed)
-        if (myDisplayShadow) {
-            myShadowDistance = 0;
+        if (displayShadow) {
+            shadowDistance = 0;
 
             boolean canMoveDown = true;
 
             // Drop the shadow to calculate new distance
             while (true) {
-                for (int[] relLoc : myRelLocs)
-                    if (relLoc[1] + myRow - myShadowDistance <= 0
-                            || myGrid.isOccupied(relLoc[0] + myCol, relLoc[1]
-                                    + myRow - myShadowDistance - 1)
-                            && !isSelfOccupied(relLoc[0] + myCol, relLoc[1]
-                                    + myRow - myShadowDistance - 1)) {
+                for (int[] relLoc : relLocs) {
+                    if (relLoc[1] + row - shadowDistance <= 0
+                        || grid.isOccupied(relLoc[0] + col, relLoc[1] + row
+                            - shadowDistance - 1)
+                        && !isSelfOccupied(relLoc[0] + col, relLoc[1] + row
+                            - shadowDistance - 1)) {
                         canMoveDown = false;
                         break;
                     }
+                }
 
-                if (!canMoveDown)
+                if (!canMoveDown) {
                     break;
+                }
 
-                ++myShadowDistance;
+                ++shadowDistance;
             }
 
-            for (int[] relLoc : myRelLocs)
-                myGrid.set(relLoc[0] + myCol, relLoc[1] + myRow
-                        - myShadowDistance, SquareType.SHADOW);
+            for (int[] relLoc : relLocs) {
+                grid.set(relLoc[0] + col, relLoc[1] + row - shadowDistance,
+                    SquareType.SHADOW);
+            }
         }
 
         // Place this tetromino in the grid (overlaps shadow)
-        for (int[] relLoc : myRelLocs)
-            myGrid.set(relLoc[0] + myCol, relLoc[1] + myRow, myType);
+        for (int[] relLoc : relLocs) {
+            grid.set(relLoc[0] + col, relLoc[1] + row, type);
+        }
     }
 }

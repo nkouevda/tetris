@@ -1,26 +1,20 @@
 /**
  * @author Nikita Kouevda
- * @date 2012/06/02
+ * @date 2013/10/05
  */
 
 package tetris.game;
 
 import java.util.ArrayList;
+
 import javax.swing.Timer;
+
 import tetris.game.TetrisGrid.SquareType;
 
 public class TetrisGame {
-    // -------------------------------------------------------------------------
-    // Enumerations
-    // -------------------------------------------------------------------------
-
     public enum GameState {
         OFF, ON, PAUSED
     }
-
-    // -------------------------------------------------------------------------
-    // Fields
-    // -------------------------------------------------------------------------
 
     public static final int MAX_LEVEL = 20, SMALL_GRID_SIZE = 4;
 
@@ -28,392 +22,371 @@ public class TetrisGame {
             DEFAULT_BASKET_ROWS = 20, LINES_PER_LEVEL = 10,
             MILLIS_PER_LEVEL = 50;
 
-    private Timer myStepTimer;
+    private Timer stepTimer;
 
-    private TetrisGrid myBasketGrid, myNextGrid, myHoldGrid;
+    private TetrisGrid basketGrid, nextGrid, holdGrid;
 
-    private TypeGenerator myTypeGenerator;
+    private TypeGenerator typeGenerator;
 
-    private Tetromino myCurrentTetromino, myNextTetromino, myHoldTetromino;
+    private Tetromino currentTetromino, nextTetromino, holdTetromino;
 
-    private GameState myGameState;
+    private GameState gameState;
 
-    private int myScore, myLines, myLevel, myInitialLevel;
+    private int score, lines, level, initialLevel;
 
-    private boolean myRotateClockwise, myMoveAfterDrop, myDisplayShadow,
-            myHoldUsed;
-
-    // -------------------------------------------------------------------------
-    // Constructors
-    // -------------------------------------------------------------------------
+    private boolean rotateClockwise, moveAfterDrop, displayShadow, holdUsed;
 
     public TetrisGame(Timer timer) {
-        myStepTimer = timer;
+        stepTimer = timer;
 
         // 2 extra spaces above, for basket only
-        myBasketGrid =
-                new TetrisGrid(DEFAULT_BASKET_COLS, DEFAULT_BASKET_ROWS + 2);
-        myNextGrid = new TetrisGrid(SMALL_GRID_SIZE, SMALL_GRID_SIZE);
-        myHoldGrid = new TetrisGrid(SMALL_GRID_SIZE, SMALL_GRID_SIZE);
+        basketGrid =
+            new TetrisGrid(DEFAULT_BASKET_COLS, DEFAULT_BASKET_ROWS + 2);
+        nextGrid = new TetrisGrid(SMALL_GRID_SIZE, SMALL_GRID_SIZE);
+        holdGrid = new TetrisGrid(SMALL_GRID_SIZE, SMALL_GRID_SIZE);
 
-        // Construct the type generator
-        myTypeGenerator = new TypeGenerator();
+        typeGenerator = new TypeGenerator();
 
-        // Initialize other fields
-        myGameState = GameState.OFF;
-        myScore = myLines = 0;
-        myInitialLevel = 1;
+        gameState = GameState.OFF;
+        score = lines = 0;
+        initialLevel = 1;
     }
 
-    // -------------------------------------------------------------------------
-    // Methods
-    // -------------------------------------------------------------------------
-
     public TetrisGrid getBasketGrid() {
-        return myBasketGrid;
+        return basketGrid;
     }
 
     public TetrisGrid getNextGrid() {
-        return myNextGrid;
+        return nextGrid;
     }
 
     public TetrisGrid getHoldGrid() {
-        return myHoldGrid;
+        return holdGrid;
     }
 
     public GameState getState() {
-        return myGameState;
+        return gameState;
     }
 
     public int getScore() {
-        return myScore;
+        return score;
     }
 
     public int getLines() {
-        return myLines;
+        return lines;
     }
 
     public int getLevel() {
-        return myLevel;
+        return level;
     }
 
     public boolean isRotateClockwise() {
-        return myRotateClockwise;
+        return rotateClockwise;
     }
 
     public boolean isMoveAfterDrop() {
-        return myMoveAfterDrop;
+        return moveAfterDrop;
     }
 
     public boolean isDisplayShadow() {
-        return myDisplayShadow;
+        return displayShadow;
     }
 
     public void setRotateClockwise(boolean rotateClockwise) {
-        myRotateClockwise = rotateClockwise;
+        this.rotateClockwise = rotateClockwise;
     }
 
     public void setMoveAfterDrop(boolean moveAfterDrop) {
-        myMoveAfterDrop = moveAfterDrop;
+        this.moveAfterDrop = moveAfterDrop;
     }
 
     public void setDisplayShadow(boolean displayShadow) {
-        myDisplayShadow = displayShadow;
+        this.displayShadow = displayShadow;
 
-        if (myGameState != GameState.OFF)
-            myCurrentTetromino.setDisplayShadow(myDisplayShadow);
+        if (gameState != GameState.OFF) {
+            currentTetromino.setDisplayShadow(displayShadow);
+        }
     }
 
     public void setInitialLevel(int initialLevel) {
         endGame();
-        myInitialLevel = initialLevel;
+        this.initialLevel = initialLevel;
     }
 
     public void setBasketSize(int cols, int rows) {
         endGame();
-        myBasketGrid = new TetrisGrid(cols, rows + 2);
+        basketGrid = new TetrisGrid(cols, rows + 2);
     }
 
     public void startGame() {
-        // Clear all grids
-        myBasketGrid.clear();
-        myNextGrid.clear();
-        myHoldGrid.clear();
+        basketGrid.clear();
+        nextGrid.clear();
+        holdGrid.clear();
 
-        // Set fields to initial values
-        myGameState = GameState.ON;
-        myScore = myLines = 0;
-        myLevel = myInitialLevel;
-        myHoldUsed = false;
+        gameState = GameState.ON;
+        score = lines = 0;
+        level = initialLevel;
+        holdUsed = false;
 
-        // Reset the type generator
-        myTypeGenerator.reset();
+        typeGenerator.reset();
 
-        // Construct the current tetromino
-        myCurrentTetromino =
-                new Tetromino(myTypeGenerator.getNextType(), myBasketGrid,
-                        myDisplayShadow);
+        currentTetromino =
+            new Tetromino(typeGenerator.getNextType(), basketGrid,
+                displayShadow);
 
-        // Move down once for visibility (optional)
-        myCurrentTetromino.moveDown();
+        // Move down once for visibility
+        currentTetromino.moveDown();
 
-        // Construct the next tetromino
-        myNextTetromino =
-                new Tetromino(myTypeGenerator.getNextType(), myNextGrid, false);
-        myNextTetromino.moveDown();
+        nextTetromino =
+            new Tetromino(typeGenerator.getNextType(), nextGrid, false);
+        nextTetromino.moveDown();
 
-        // Initialize the hold tetromino to null for now
-        myHoldTetromino = null;
+        holdTetromino = null;
 
-        // Set the delay for the timer and restart it
-        myStepTimer.setInitialDelay(1000 - (myInitialLevel - 1)
-                * MILLIS_PER_LEVEL);
-        myStepTimer.setDelay(myStepTimer.getInitialDelay());
-        myStepTimer.restart();
+        stepTimer.setInitialDelay(1000 - (initialLevel - 1) * MILLIS_PER_LEVEL);
+        stepTimer.setDelay(stepTimer.getInitialDelay());
+        stepTimer.restart();
     }
 
     public void pauseGame() {
-        if (myGameState == GameState.ON) {
-            myGameState = GameState.PAUSED;
-            myStepTimer.stop();
-        } else if (myGameState == GameState.PAUSED) {
-            myGameState = GameState.ON;
-            myStepTimer.start();
+        if (gameState == GameState.ON) {
+            gameState = GameState.PAUSED;
+            stepTimer.stop();
+        } else if (gameState == GameState.PAUSED) {
+            gameState = GameState.ON;
+            stepTimer.start();
         }
     }
 
     public void endGame() {
-        myGameState = GameState.OFF;
-        myStepTimer.stop();
+        gameState = GameState.OFF;
+        stepTimer.stop();
     }
 
     public void moveTetrominoLeft() {
-        if (myGameState == GameState.ON)
-            myCurrentTetromino.moveLeft();
+        if (gameState == GameState.ON) {
+            currentTetromino.moveLeft();
+        }
     }
 
     public void moveTetrominoRight() {
-        if (myGameState == GameState.ON)
-            myCurrentTetromino.moveRight();
+        if (gameState == GameState.ON) {
+            currentTetromino.moveRight();
+        }
     }
 
     public void moveTetrominoDown() {
-        if (myGameState != GameState.ON)
+        if (gameState != GameState.ON) {
             return;
+        }
 
-        if (myCurrentTetromino.moveDown()) {
-            ++myScore;
+        if (currentTetromino.moveDown()) {
+            ++score;
 
-            myStepTimer.restart();
+            stepTimer.restart();
         }
     }
 
     public void moveTetrominoDownTimer() {
-        if (myGameState == GameState.ON && !myCurrentTetromino.moveDown())
+        if (gameState == GameState.ON && !currentTetromino.moveDown()) {
             nextTetromino();
+        }
     }
 
     public void dropTetromino(boolean modifyDrop) {
-        if (myGameState == GameState.ON) {
-            int linesMoved = myCurrentTetromino.drop();
+        if (gameState == GameState.ON) {
+            int linesMoved = currentTetromino.drop();
 
-            myScore += linesMoved;
+            score += linesMoved;
 
-            // Dropped tetromino is negated by both setting and modifier
-            if (linesMoved == 0 || myMoveAfterDrop == modifyDrop)
+            if (linesMoved == 0 || moveAfterDrop == modifyDrop) {
                 nextTetromino();
-            else
-                myStepTimer.restart();
+            } else {
+                stepTimer.restart();
+            }
         }
     }
 
     public void rotateTetromino(boolean switchRotate) {
-        if (myGameState == GameState.ON)
-            myCurrentTetromino.rotate(myRotateClockwise ^ switchRotate);
+        if (gameState == GameState.ON) {
+            currentTetromino.rotate(rotateClockwise ^ switchRotate);
+        }
     }
 
     public void holdTetromino() {
-        if (myGameState != GameState.ON)
+        if (gameState != GameState.ON) {
             return;
-
-        // Disallow multiple holds per piece
-        if (myHoldUsed)
-            return;
-        else
-            myHoldUsed = true;
-
-        SquareType currentType = myCurrentTetromino.getType();
-
-        if (myHoldTetromino == null) {
-            // Transfer the current tetromino to the hold grid
-            myCurrentTetromino.removeFromGrid();
-            myHoldTetromino = new Tetromino(currentType, myHoldGrid, false);
-            myHoldTetromino.moveDown();
-
-            // End the game if next tetromino cannot spawn in the basket
-            if (!myNextTetromino.isLegalSpawn(myBasketGrid))
-                endGame();
-
-            // Transfer next tetromino to the basket
-            myCurrentTetromino =
-                    new Tetromino(myNextTetromino.getType(), myBasketGrid,
-                            myDisplayShadow);
-
-            // Move down once for visibility (optional)
-            myCurrentTetromino.moveDown();
-
-            // Reset preview area and construct new next tetromino
-            myNextTetromino.removeFromGrid();
-            myNextTetromino =
-                    new Tetromino(myTypeGenerator.getNextType(), myNextGrid,
-                            false);
-            myNextTetromino.moveDown();
-        } else {
-            // Remove the old hold tetromino and store its type
-            myHoldTetromino.removeFromGrid();
-            SquareType holdType = myHoldTetromino.getType();
-
-            // Transfer the current tetromino to the hold grid
-            myCurrentTetromino.removeFromGrid();
-            myHoldTetromino = new Tetromino(currentType, myHoldGrid, false);
-            myHoldTetromino.moveDown();
-
-            // End the game if next tetromino cannot spawn in the basket
-            if (!myNextTetromino.isLegalSpawn(myBasketGrid))
-                endGame();
-
-            // Transfer the hold tetromino back into the basket
-            myCurrentTetromino =
-                    new Tetromino(holdType, myBasketGrid, myDisplayShadow);
-
-            // Move down once for visibility (optional)
-            myCurrentTetromino.moveDown();
         }
 
-        myStepTimer.restart();
+        // Disallow multiple holds per piece
+        if (holdUsed) {
+            return;
+        } else {
+            holdUsed = true;
+        }
+
+        SquareType currentType = currentTetromino.getType();
+
+        if (holdTetromino == null) {
+            // Transfer the current tetromino to the hold grid
+            currentTetromino.removeFromGrid();
+            holdTetromino = new Tetromino(currentType, holdGrid, false);
+            holdTetromino.moveDown();
+
+            // End the game if next tetromino cannot spawn in the basket
+            if (!nextTetromino.isLegalSpawn(basketGrid)) {
+                endGame();
+            }
+
+            // Transfer next tetromino to the basket
+            currentTetromino =
+                new Tetromino(nextTetromino.getType(), basketGrid,
+                    displayShadow);
+
+            // Move down once for visibility
+            currentTetromino.moveDown();
+
+            nextTetromino.removeFromGrid();
+            nextTetromino =
+                new Tetromino(typeGenerator.getNextType(), nextGrid, false);
+            nextTetromino.moveDown();
+        } else {
+            // Remove the old hold tetromino and store its type
+            holdTetromino.removeFromGrid();
+            SquareType holdType = holdTetromino.getType();
+
+            // Transfer the current tetromino to the hold grid
+            currentTetromino.removeFromGrid();
+            holdTetromino = new Tetromino(currentType, holdGrid, false);
+            holdTetromino.moveDown();
+
+            // End the game if next tetromino cannot spawn in the basket
+            if (!nextTetromino.isLegalSpawn(basketGrid)) {
+                endGame();
+            }
+
+            // Transfer the hold tetromino back into the basket
+            currentTetromino =
+                new Tetromino(holdType, basketGrid, displayShadow);
+
+            // Move down once for visibility
+            currentTetromino.moveDown();
+        }
+
+        stepTimer.restart();
     }
 
     private void nextTetromino() {
         // End the game if the current tetromino locked too high
-        if (myCurrentTetromino.isIllegalLock())
+        if (currentTetromino.isIllegalLock()) {
             endGame();
+        }
 
         removeLines();
-        myHoldUsed = false;
+        holdUsed = false;
 
         // End the game if next tetromino cannot spawn in the basket
-        if (!myNextTetromino.isLegalSpawn(myBasketGrid))
+        if (!nextTetromino.isLegalSpawn(basketGrid)) {
             endGame();
+        }
 
         // Increase level and set timer's delay accordingly if necessary
-        if (myLines / LINES_PER_LEVEL == (myLevel - myInitialLevel + 1))
-            if (++myLevel <= MAX_LEVEL) {
-                myStepTimer.setInitialDelay(myStepTimer.getInitialDelay()
-                        - MILLIS_PER_LEVEL);
-                myStepTimer.setDelay(myStepTimer.getInitialDelay());
+        if (lines / LINES_PER_LEVEL == (level - initialLevel + 1)) {
+            if (++level <= MAX_LEVEL) {
+                stepTimer.setInitialDelay(stepTimer.getInitialDelay()
+                    - MILLIS_PER_LEVEL);
+                stepTimer.setDelay(stepTimer.getInitialDelay());
             }
+        }
 
         // Transfer next tetromino to current tetromino
-        myCurrentTetromino =
-                new Tetromino(myNextTetromino.getType(), myBasketGrid,
-                        myDisplayShadow);
+        currentTetromino =
+            new Tetromino(nextTetromino.getType(), basketGrid, displayShadow);
 
-        // Move down once for visibility (optional)
-        myCurrentTetromino.moveDown();
+        // Move down once for visibility
+        currentTetromino.moveDown();
 
-        // Reset preview area and construct new next tetromino
-        myNextTetromino.removeFromGrid();
-        myNextTetromino =
-                new Tetromino(myTypeGenerator.getNextType(), myNextGrid, false);
-        myNextTetromino.moveDown();
+        nextTetromino.removeFromGrid();
+        nextTetromino =
+            new Tetromino(typeGenerator.getNextType(), nextGrid, false);
+        nextTetromino.moveDown();
 
-        myStepTimer.restart();
+        stepTimer.restart();
     }
 
     private void removeLines() {
         int linesCleared = 0;
 
-        for (int row = myBasketGrid.getNumRows() - 1; row >= 0;) {
+        for (int row = basketGrid.getNumRows() - 1; row >= 0;) {
             boolean lineFull = true;
 
             // Continue to next iteration if any square is empty
-            for (int col = 0; col < myBasketGrid.getNumCols(); ++col)
-                if (!myBasketGrid.isOccupied(col, row)) {
+            for (int col = 0; col < basketGrid.getNumCols(); ++col) {
+                if (!basketGrid.isOccupied(col, row)) {
                     lineFull = false;
                     break;
                 }
+            }
 
             if (lineFull) {
                 linesCleared++;
 
                 // Shift basket down one row to clear the filled row
-                for (int j = 0; j < myBasketGrid.getNumCols(); ++j) {
-                    for (int i = row; i < myBasketGrid.getNumRows() - 2; ++i)
-                        myBasketGrid.set(j, i, myBasketGrid.get(j, i + 1));
+                for (int j = 0; j < basketGrid.getNumCols(); ++j) {
+                    for (int i = row; i < basketGrid.getNumRows() - 2; ++i) {
+                        basketGrid.set(j, i, basketGrid.get(j, i + 1));
+                    }
 
-                    myBasketGrid.set(j, myBasketGrid.getNumRows() - 1,
-                            SquareType.EMPTY);
+                    basketGrid.set(j, basketGrid.getNumRows() - 1,
+                        SquareType.EMPTY);
                 }
-            } else
+            } else {
                 --row;
+            }
         }
 
         if (linesCleared > 0) {
             // Add the number of lines removed this time to the total
-            myLines += linesCleared;
+            lines += linesCleared;
 
-            // (40, 100, 300, 1200) * level
-            myScore +=
-                    (linesCleared == 1 ? 40 : linesCleared == 2 ? 100
-                            : linesCleared == 3 ? 300 : 1200)
-                            * myLevel;
+            // (40, 100, 300, 1200)[linesCleared] * level
+            score +=
+                (linesCleared == 1 ? 40 : linesCleared == 2 ? 100
+                    : linesCleared == 3 ? 300 : 1200) * level;
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Classes
-    // -------------------------------------------------------------------------
-
     private class TypeGenerator {
-        // ---------------------------------------------------------------------
-        // Fields
-        // ---------------------------------------------------------------------
-
         private final SquareType[] SQUARE_TYPES;
 
-        private ArrayList<SquareType> myTypeList;
-
-        // ---------------------------------------------------------------------
-        // Construtors
-        // ---------------------------------------------------------------------
+        private ArrayList<SquareType> typeList;
 
         private TypeGenerator() {
             SQUARE_TYPES =
-                    new SquareType[]{SquareType.I, SquareType.J, SquareType.L,
-                        SquareType.O, SquareType.S, SquareType.T, SquareType.Z};
+                new SquareType[] {SquareType.I, SquareType.J, SquareType.L,
+                    SquareType.O, SquareType.S, SquareType.T, SquareType.Z};
 
-            myTypeList = new ArrayList<SquareType>(SQUARE_TYPES.length);
+            typeList = new ArrayList<SquareType>(SQUARE_TYPES.length);
         }
-
-        // ---------------------------------------------------------------------
-        // Methods
-        // ---------------------------------------------------------------------
 
         private SquareType getNextType() {
             // Refill the list if necessary
-            if (myTypeList.isEmpty())
-                for (SquareType type : SQUARE_TYPES)
-                    myTypeList.add(type);
+            if (typeList.isEmpty()) {
+                for (SquareType type : SQUARE_TYPES) {
+                    typeList.add(type);
+                }
+            }
 
             // Remove and return a random member of the list
-            return myTypeList.remove((int)(myTypeList.size() * Math.random()));
+            return typeList.remove((int)(typeList.size() * Math.random()));
         }
 
         private void reset() {
-            myTypeList.clear();
+            typeList.clear();
 
-            for (SquareType type : SQUARE_TYPES)
-                myTypeList.add(type);
+            for (SquareType type : SQUARE_TYPES) {
+                typeList.add(type);
+            }
         }
     }
 }
