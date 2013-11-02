@@ -28,4 +28,4 @@ jar: all
 	$(JAR) $(JAROPTS) $(JARTARGET) $(MANIFEST) $(ESCCLASSES)
 
 clean:
-	rm $(ESCCLASSES) $(JARTARGET)
+	rm -f $(ESCCLASSES) $(JARTARGET)
