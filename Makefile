@@ -1,20 +1,20 @@
 # Nikita Kouevda
-# 2013/07/25
+# 2013/11/01
 
-# Java compilers and options
-JAVAC = javac
-JAR = jar
-JAROPTS = cfm
+# Compiler, archive tool, and options
+JAVAC := javac
+JAR := jar
+JAROPTS := cfm
 
 # Sources and targets
-SOURCES = $(wildcard tetris/game/*.java) $(wildcard tetris/gui/*.java)
-TARGETS = $(SOURCES:.java=.class)
-MANIFEST = MANIFEST.MF
-JARTARGET = tetris.jar
+SOURCES := $(wildcard tetris/game/*.java) $(wildcard tetris/gui/*.java)
+TARGETS := $(SOURCES:.java=.class)
+MANIFEST := MANIFEST.MF
+JARTARGET := tetris.jar
 
-# All classes (including inner classes) and the escaped versions (for commands)
-CLASSES = $(wildcard tetris/game/*.class) $(wildcard tetris/gui/*.class)
-ESCCLASSES = $(subst $$,\$$,$(CLASSES))
+# All class files and their escaped versions, for commands
+CLASSES := $(wildcard tetris/game/*.class) $(wildcard tetris/gui/*.class)
+ESCCLASSES := $(subst $$,\$$,$(CLASSES))
 
 # Phony targets
 .PHONY: all jar clean
@@ -28,4 +28,4 @@ jar: all
 	$(JAR) $(JAROPTS) $(JARTARGET) $(MANIFEST) $(ESCCLASSES)
 
 clean:
-	rm -f $(ESCCLASSES) $(JARTARGET)
+	rm $(ESCCLASSES) $(JARTARGET)
