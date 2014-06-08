@@ -1,15 +1,11 @@
 # Nikita Kouevda
-# 2013/10/05
+# 2014/06/08
 
 # Finder
 .DS_Store
 
 # Vim
 *.swp
-
-# Eclipse
-.classpath
-.project
 
 # Java
 *.class
