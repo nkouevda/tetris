@@ -1,5 +1,5 @@
 # Nikita Kouevda
-# 2014/05/05
+# 2014/08/07
 
 # Compiler, archive tool, and options
 JAVAC := javac
@@ -17,7 +17,7 @@ CLASSES := $(wildcard tetris/*/*.class)
 ESCCLASSES := $(subst $$,\$$,$(CLASSES))
 
 # Phony targets
-.PHONY: all jar clean
+.PHONY: all jar cleanclass clean
 
 all: $(TARGETS)
 
@@ -26,6 +26,9 @@ all: $(TARGETS)
 
 jar: all
 	$(JAR) $(JAROPTS) $(JARTARGET) $(MANIFEST) $(ESCCLASSES)
+
+cleanclass:
+	rm -f $(ESCCLASSES)
 
 clean:
 	rm -f $(ESCCLASSES) $(JARTARGET)
