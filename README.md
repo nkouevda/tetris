@@ -1,6 +1,3 @@
-<!-- Nikita Kouevda -->
-<!-- 2013/10/05 -->
-
 # Tetris
 
 Tetris implemented in Java.

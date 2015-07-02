@@ -1,8 +1,3 @@
-/**
- * @author Nikita Kouevda
- * @date 2013/10/05
- */
-
 package tetris.gui;
 
 import javax.swing.JFrame;
