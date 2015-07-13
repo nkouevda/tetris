@@ -138,7 +138,7 @@ public class TetrisMenuBar extends JMenuBar {
 
     private static void showAbout() {
         JOptionPane.showMessageDialog(null,
-            "Created by Nikita Kouevda\nJune 2, 2012", "About",
+            "Created by Nikita Kouevda\nJuly 12, 2015", "About",
             JOptionPane.INFORMATION_MESSAGE);
     }
 

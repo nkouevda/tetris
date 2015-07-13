@@ -1,31 +1,25 @@
-# Compiler, archive tool, and options
+# Compiler and archive tool
 JAVAC := javac
-JAR := jar
-JAROPTS := cfm
+JAR := jar cfm
 
 # Sources and targets
-SOURCES := $(wildcard tetris/*/*.java)
-TARGETS := $(SOURCES:.java=.class)
+SRC := src
+BIN := bin
+SOURCEPATH := $(SRC)/main/java
+MAIN := $(SOURCEPATH)/tetris/gui/TetrisFrame.java
 MANIFEST := MANIFEST.MF
 JARTARGET := tetris.jar
 
-# All class files and their escaped versions, for commands
-CLASSES := $(wildcard tetris/*/*.class)
-ESCCLASSES := $(subst $$,\$$,$(CLASSES))
-
 # Phony targets
-.PHONY: all jar cleanclass clean
+.PHONY: all cleanbin clean
 
-all: $(TARGETS)
+all:
+	mkdir -p $(BIN)
+	$(JAVAC) -d $(BIN) -sourcepath $(SOURCEPATH) $(MAIN)
+	$(JAR) $(JARTARGET) $(MANIFEST) -C $(BIN) .
 
-%.class: %.java
-	$(JAVAC) $+
-
-jar: all
-	$(JAR) $(JAROPTS) $(JARTARGET) $(MANIFEST) $(ESCCLASSES)
-
-cleanclass:
-	rm -f $(ESCCLASSES)
+cleanbin:
+	rm -rf $(BIN)
 
 clean:
-	rm -f $(ESCCLASSES) $(JARTARGET)
+	rm -rf $(BIN) $(JARTARGET)
