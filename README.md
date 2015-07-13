@@ -2,20 +2,10 @@
 
 Tetris implemented in Java.
 
-## Usage
-
-To compile:
+## Compilation
 
     make
 
-or (JAR):
+## Usage
 
-    make && make jar
-
-To run:
-
-    java tetris.gui.TetrisFrame
-
-or (JAR):
-
-    java -jar Tetris.jar
+    java -jar tetris.jar
