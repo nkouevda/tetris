@@ -1,25 +1,22 @@
-# Compiler and archive tool
 JAVAC := javac
 JAR := jar cfm
 
-# Sources and targets
-SRC := src
-BIN := bin
-SOURCEPATH := $(SRC)/main/java
-MAIN := $(SOURCEPATH)/tetris/gui/TetrisFrame.java
-MANIFEST := MANIFEST.MF
-JARTARGET := tetris.jar
+srcdir := src
+sourcepath := $(srcdir)/main/java
+main := $(sourcepath)/tetris/gui/TetrisFrame.java
+manifest := MANIFEST.MF
+bindir := bin
+tetris := tetris.jar
 
-# Phony targets
 .PHONY: all cleanbin clean
 
 all:
-	mkdir -p $(BIN)
-	$(JAVAC) -d $(BIN) -sourcepath $(SOURCEPATH) $(MAIN)
-	$(JAR) $(JARTARGET) $(MANIFEST) -C $(BIN) .
+	mkdir -p $(bindir)
+	$(JAVAC) -d $(bindir) -sourcepath $(sourcepath) $(main)
+	$(JAR) $(tetris) $(manifest) -C $(bindir) .
 
 cleanbin:
-	rm -rf $(BIN)
+	rm -rf $(bindir)
 
 clean:
-	rm -rf $(BIN) $(JARTARGET)
+	rm -rf $(bindir) $(tetris)
