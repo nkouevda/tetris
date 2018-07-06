@@ -4,7 +4,13 @@ Tetris implemented in Java.
 
 ## Compilation
 
+Compile:
+
     make
+
+Clean up:
+
+    make clean
 
 ## Usage
 
